@@ -1,47 +1,88 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 2rem;
+	text-align: center;
 }
 
 .cardContainer {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.pokedex {
+	color: #213547;
+}
+
+.pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.pokedex button {
+	background-color: #1b3b2f;
+	color: white;
+}
+
+.pokedex button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.pagination {
+	gap: 0.5rem;
+}
+
+.pagination button {
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0.5rem;
+	background-color: transparent;
+	color: #213547;
+	border: 1px solid #b4bec5;
+}
+
+.pagination button[aria-current='page'] {
+	background-color: #213547;
+	color: white;
+	font-weight: 700;
 }
 
 .card {
-  width: 200px;
-  padding: 1rem;
-  border-radius: 5px;
-  box-shadow: 0px 0px 5px gray;
-  color: white;
-  font-size: 1.6rem;
-  text-align: center;
-  text-shadow: 0px 0px 5px gray;
+	width: 200px;
+	padding: 1rem;
+	border-radius: 5px;
+	box-shadow: 0px 0px 5px gray;
+	color: white;
+	font-size: 1.6rem;
+	text-align: center;
+	text-shadow: 0px 0px 5px gray;
 }
 
 .card-img {
-  width: 100%;
-  margin-bottom: 0.5rem;
-  background-color: white;
-  border-radius: inherit;
-  box-shadow: inherit;
+	width: 100%;
+	margin-bottom: 0.5rem;
+	background-color: white;
+	border-radius: inherit;
+	box-shadow: inherit;
 }
 
-
 .card-noimg {
-  width: 100%;
-  margin-bottom: 1rem;
-  margin-top: 0px;
-  background-color: white;
-  border-radius: inherit;
-  box-shadow: inherit;
-  /* text-align: center; */
-  justify-content: center;
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
-  color: black;
+	width: 100%;
+	margin-bottom: 1rem;
+	margin-top: 0px;
+	background-color: white;
+	border-radius: inherit;
+	box-shadow: inherit;
+	/* text-align: center; */
+	justify-content: center;
+	display: flex;
+	flex-direction: column;
+	min-height: 200px;
+	color: black;
 }
