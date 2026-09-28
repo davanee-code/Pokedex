@@ -11,7 +11,7 @@ L’objectif du projet est de proposer davantage qu’un Pokédex classique. L�
 - Explorer et rechercher des Pokémon
 - Filtrer les Pokémon par type et génération
 - Consulter leurs informations et statistiques
-- Ajouter jusqu’à six Pokémon à une équipe
+- Ajouter plusieurs Pokémon à une équipe
 - Analyser les types, résistances et faiblesses de l’équipe
 - Comparer plusieurs Pokémon
 - Enregistrer une équipe et des favoris dans le navigateur
