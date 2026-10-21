@@ -16,10 +16,13 @@ function Navbar({ selectedCount }) {
 					Explorer
 				</button>
 				<button className="focus:bg-accent-tint focus:text-accent rounded-lg py-1 px-2">
-					Collections
+					Mon équipe
 				</button>
 				<button className="focus:bg-accent-tint focus:text-accent rounded-lg py-1 px-2">
-					À propos
+					Comparer
+				</button>
+				<button className="focus:bg-accent-tint focus:text-accent rounded-lg py-1 px-2">
+					Favoris
 				</button>
 			</div>
 			<div>
