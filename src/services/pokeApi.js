@@ -1,5 +1,6 @@
 const API_URL = 'https://pokeapi.co/api/v2';
 const PAGE_SIZE = 8;
+const FRENCH_NAMES_URL = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv';
 
 const cache = new Map();
 
@@ -24,7 +25,7 @@ const typeColors = {
 	flying: '#8b90bd',
 };
 
-async function getResource(url) {
+async function getResource(url, format = 'json') {
 	if (!cache.has(url)) {
 		const request = fetch(url)
 			.then((response) => {
@@ -36,7 +37,7 @@ async function getResource(url) {
 					throw new Error(`PokéAPI : erreur HTTP ${response.status}`);
 				}
 
-				return response.json();
+				return format === 'text' ? response.text() : response.json();
 			})
 			.catch((error) => {
 				cache.delete(url);
@@ -60,6 +61,33 @@ function formatPokemon(pokemon) {
 			pokemon.sprites.front_default,
 		color: typeColors[primaryType] || typeColors.normal,
 	};
+}
+
+export async function getPokemonList() {
+	const results = [];
+	let url = `${API_URL}/pokemon?limit=2000`;
+
+	while (url) {
+		const page = await getResource(url);
+		results.push(...page.results);
+		url = page.next;
+	}
+
+	// Official PokéAPI translations avoid one species request per Pokémon.
+	const translations = await getResource(FRENCH_NAMES_URL, 'text');
+	const frenchNames = new Map();
+	for (const line of translations.split(/\r?\n/)) {
+		const match = line.match(/^(\d+),5,("(?:[^"]|"")*"|[^,]*),/);
+		if (match) {
+			const name = match[2].replace(/^"|"$/g, '').replace(/""/g, '"');
+			frenchNames.set(Number(match[1]), name);
+		}
+	}
+
+	return results.map(({ name, url }) => {
+		const id = Number(url.split('/').filter(Boolean).pop());
+		return { name, id, displayName: frenchNames.get(id) || name };
+	});
 }
 
 export async function getPokemonPage(page = 0) {
