@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { getPokemonList } from '../services/pokeApi';
+import PropTypes from 'prop-types';
 
 function normalizeSearch(value) {
 	return value
@@ -11,7 +12,7 @@ function normalizeSearch(value) {
 		.replace(/[\u0300-\u036f]/g, '');
 }
 
-function SearchBar() {
+function SearchBar({ onSearch }) {
 	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState('');
 	const [pokemonList, setPokemonList] = useState([]);
@@ -50,11 +51,14 @@ function SearchBar() {
 		: [];
 	const suggestions = matches;
 	const expanded = open && suggestions.length > 0;
-	const activeId = expanded && activeIndex >= 0 ? suggestions[activeIndex]?.id : undefined;
+	const activeId =
+		expanded && activeIndex >= 0 ? suggestions[activeIndex]?.id : undefined;
 
 	useEffect(() => {
 		if (activeId !== undefined) {
-			document.getElementById(`pokemon-option-${activeId}`)?.scrollIntoView({ block: 'nearest' });
+			document
+				.getElementById(`pokemon-option-${activeId}`)
+				?.scrollIntoView({ block: 'nearest' });
 		}
 	}, [activeId]);
 
@@ -65,6 +69,7 @@ function SearchBar() {
 	}
 
 	function handleKeyDown(event) {
+		if (event.nativeEvent.isComposing) return;
 		if (event.key === 'Escape') {
 			setOpen(false);
 			setActiveIndex(-1);
@@ -84,33 +89,43 @@ function SearchBar() {
 			selectPokemon(suggestions[activeIndex]);
 		}
 	}
+
+	function handleSubmit(event) {
+		event.preventDefault();
+		if (!query || loading || error) return;
+		onSearch(search.trim(), matches);
+		setOpen(false);
+		setActiveIndex(-1);
+	}
+
 	return (
 		<section
 			aria-labelledby="pokemon-search-title"
-			className="flex flex-col gap-8 rounded-[28px] border border-primary/10 bg-primary-tint px-6 py-8 lg:min-h-[274px] lg:flex-row lg:items-end lg:gap-10 lg:px-10"
+			className="relative z-20 flex w-full min-w-0 shrink-0 flex-col gap-md rounded-lg border border-primary/10 bg-primary-tint px-lg py-lg sm:px-xl sm:py-xl lg:flex-row lg:items-end lg:gap-columns"
 		>
-			<div className="min-w-0 flex-1">
-				<p className="mb-4 text-[11px] font-black uppercase tracking-[0.1em] text-[#cf263b]">
-					Base PokéAPI
-					{!loading && !error ? ` · ${pokemonList.length} entrées` : ''}
-				</p>
+			<div className="flex min-w-0 flex-1 flex-col gap-md">
 				<h1
 					id="pokemon-search-title"
-					className="max-w-[600px] text-[36px] leading-[1.08] font-black tracking-[-0.035em] text-ink sm:text-[44px] xl:text-[52px]"
+					className="wrap-anywhere text-hero leading-title font-black tracking-title text-ink sm:text-hero-tablet xl:text-hero-desktop"
 				>
 					Explorez votre prochain compagnon
 				</h1>
-				<p className="mt-4 max-w-[510px] text-sm leading-6 text-muted">
+				<p className="text-sm leading-6 text-muted">
 					Parcourez les espèces, comparez leurs caractéristiques et gardez les
 					plus prometteuses dans votre sélection.
 				</p>
 			</div>
-			<div className="relative w-full shrink-0 rounded-[17px] border border-primary/15 bg-white px-2 shadow-[0_12px_30px_rgba(150,70,50,0.07)] focus-within:ring-2 focus-within:ring-primary/20 lg:w-[44%]">
-				<div className="flex min-h-[50px] flex-row items-center gap-3 px-2.5">
+			<form
+				onSubmit={handleSubmit}
+				className="relative w-full min-w-0 shrink-0 rounded-md border border-primary/15 bg-white px-sm shadow-search focus-within:ring-2 focus-within:ring-primary/20 lg:w-5/12"
+			>
+				<div className="flex min-w-0 flex-row items-center gap-sm px-xs sm:gap-md sm:px-md">
+					<button type="submit" aria-label="Afficher les résultats de recherche" disabled={loading || Boolean(error) || !query} className="flex min-h-11 shrink-0 items-center justify-center px-xs disabled:opacity-50">
 					<FontAwesomeIcon
 						icon={faMagnifyingGlass}
-						className="text-[13px] text-ink"
+						className="text-sm text-ink"
 					/>
+					</button>
 					<input
 						id="pokemon-search"
 						role="combobox"
@@ -137,25 +152,25 @@ function SearchBar() {
 						}}
 						onKeyDown={handleKeyDown}
 						type="search"
-						placeholder="Rechercher un Pokémon par son nom ou son ID..."
-						className="min-w-0 w-full bg-transparent py-3 text-sm text-ink outline-none placeholder:text-muted"
+						placeholder="Nom ou ID du Pokémon…"
+						className="min-w-0 w-0 flex-1 bg-transparent py-md text-base text-ink outline-none placeholder:text-muted sm:text-sm"
 					/>
 				</div>
 				<div
-					className="flex min-h-[34px] items-center justify-between gap-3 border-t border-ink/5 px-2.5 py-2 text-[10px] text-muted"
+					className="flex flex-wrap items-center justify-between gap-sm border-t border-ink/5 px-md py-sm text-xs text-muted sm:text-caption"
 					role="status"
 				>
-					<p className="flex items-center gap-1.5">
+					<p className="flex min-w-0 items-center gap-xs wrap-anywhere">
 						<span
 							aria-hidden="true"
-							className={`size-1.5 shrink-0 rounded-full ${error ? 'bg-primary' : 'bg-accent'} ${loading ? 'animate-pulse' : ''}`}
+							className={`size-xs shrink-0 rounded-full ${error ? 'bg-primary' : 'bg-accent'} ${loading ? 'animate-pulse' : ''}`}
 						/>
 						{loading
 							? 'Chargement des suggestions…'
 							: error ||
 								(query
 									? 'Recherche terminée'
-									: 'Les noms de Pokémon sont en Français')}
+									: 'Noms français ou anglais acceptés.')}
 					</p>
 					{!loading && !error && query && (
 						<p className="shrink-0">
@@ -174,12 +189,13 @@ function SearchBar() {
 						</button>
 					)}
 				</div>
+				<div hidden={!expanded} className="absolute top-full left-0 right-0 z-10 pt-sm">
 				<ul
 					id="pokemon-suggestions"
 					role="listbox"
 					aria-label="Suggestions de Pokémon"
 					hidden={!expanded}
-					className="absolute top-full left-0 right-0 z-10 mt-2 max-h-80 overflow-y-auto overscroll-contain rounded-md bg-background shadow-lg"
+					className="max-h-suggestions overflow-y-auto overscroll-contain rounded-md bg-background shadow-lg"
 				>
 					{expanded &&
 						suggestions.map((pokemon, index) => (
@@ -190,16 +206,21 @@ function SearchBar() {
 								aria-selected={index === activeIndex}
 								onMouseDown={(event) => event.preventDefault()}
 								onClick={() => selectPokemon(pokemon)}
-								className={`cursor-pointer px-6 py-3 hover:bg-accent-tint hover:text-accent ${index === activeIndex ? 'bg-accent-tint text-accent' : ''}`}
+								className={`flex min-h-12 cursor-pointer items-center justify-between gap-md px-lg py-md hover:bg-accent-tint hover:text-accent ${index === activeIndex ? 'bg-accent-tint text-accent' : ''}`}
 							>
-								<span className="capitalize">{pokemon.displayName}</span>
-								<span className="float-right text-muted">#{pokemon.id}</span>
+								<span className="min-w-0 break-words capitalize">{pokemon.displayName}</span>
+								<span className="shrink-0 text-muted">#{pokemon.id}</span>
 							</li>
 						))}
 				</ul>
-			</div>
+				</div>
+			</form>
 		</section>
 	);
 }
+
+SearchBar.propTypes = {
+	onSearch: PropTypes.func.isRequired,
+};
 
 export default SearchBar;
