@@ -274,12 +274,14 @@
 		padding-block: 0.125rem;
 	}
 
+	.search-filters-panel,
 	.team-results-layout .search-results-content,
 	.team-results-layout .team-analysis-panel {
 		scrollbar-width: none;
 		scrollbar-gutter: auto;
 	}
 
+	.search-filters-panel::-webkit-scrollbar,
 	.team-results-layout .search-results-content::-webkit-scrollbar,
 	.team-results-layout .team-analysis-panel::-webkit-scrollbar {
 		display: none;
