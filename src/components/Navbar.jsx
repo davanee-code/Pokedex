@@ -65,13 +65,13 @@ function Navbar({ selectedCount, activeView, onNavigate }) {
 			<div className="flex min-w-0 flex-1 items-center gap-sm lg:flex-none">
 				<img
 					src="/pokeball.png"
-					alt="Logo Pokédex Lab"
+					alt="Logo PokéTeam Lab"
 					width="24"
 					height="24"
 					className="h-6 w-6 shrink-0 object-contain"
 				/>
 				<p className="min-w-0 break-words text-sm font-semibold sm:text-base">
-					Pokédex Lab
+					PokéTeam Lab
 				</p>
 			</div>
 			<div className="text-ink hidden justify-center items-center gap-xl flex-1 lg:flex">
@@ -119,7 +119,7 @@ function Navbar({ selectedCount, activeView, onNavigate }) {
 			>
 				<div className="mb-8 flex items-center justify-between gap-3">
 					<p id="mobile-menu-title" className="font-bold">
-						Pokédex Lab
+						PokéTeam Lab
 					</p>
 					<button
 						type="button"

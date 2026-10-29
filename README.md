@@ -1,6 +1,6 @@
 # PokéTeam Lab
 
-Pokédex est une application web développée avec React qui utilise les données de [PokéAPI](https://pokeapi.co/) pour explorer l’univers Pokémon.
+PokéTeam Lab est une application web développée avec React qui utilise les données de [PokéAPI](https://pokeapi.co/) pour explorer l’univers Pokémon.
 
 L’objectif du projet est de proposer davantage qu’un Pokédex classique. L’application permet de rechercher des Pokémon, consulter leurs caractéristiques, composer une équipe et analyser ses forces et ses faiblesses.
 
