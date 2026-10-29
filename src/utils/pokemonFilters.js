@@ -4,6 +4,12 @@ export function toggleSelection(selection, value) {
 		: [...selection, value];
 }
 
+export function comparePokemon(left, right, sort) {
+	if (sort === 'name') return left.displayName.localeCompare(right.displayName, 'fr');
+	if (sort === 'id-desc') return right.id - left.id;
+	return left.id - right.id;
+}
+
 export function matchesPokemonFilters(
 	pokemon,
 	{ types, generations, species, capabilities },

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import { getPokemonList } from '../services/pokeApi';
 import PropTypes from 'prop-types';
 
 function normalizeSearch(value) {
@@ -12,33 +11,10 @@ function normalizeSearch(value) {
 		.replace(/[\u0300-\u036f]/g, '');
 }
 
-function SearchBar({ onSearch }) {
-	const [loading, setLoading] = useState(true);
+function SearchBar({ pokemonList, loading, error, onRetry, onSearch }) {
 	const [search, setSearch] = useState('');
-	const [pokemonList, setPokemonList] = useState([]);
-	const [error, setError] = useState('');
-	const [attempt, setAttempt] = useState(0);
 	const [open, setOpen] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(-1);
-
-	useEffect(() => {
-		let cancelled = false;
-		setLoading(true);
-		setError('');
-		getPokemonList()
-			.then((list) => {
-				if (!cancelled) setPokemonList(list);
-			})
-			.catch(() => {
-				if (!cancelled) setError('Impossible de charger les Pokémon.');
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [attempt]);
 
 	const query = normalizeSearch(search);
 	const matches = query
@@ -49,10 +25,17 @@ function SearchBar({ onSearch }) {
 					String(id) === query,
 			)
 		: [];
-	const suggestions = matches;
-	const expanded = open && suggestions.length > 0;
+	const expanded = open && matches.length > 0;
 	const activeId =
-		expanded && activeIndex >= 0 ? suggestions[activeIndex]?.id : undefined;
+		expanded && activeIndex >= 0 ? matches[activeIndex]?.id : undefined;
+	let searchStatus = 'Noms français ou anglais acceptés.';
+	if (loading) {
+		searchStatus = 'Chargement des suggestions…';
+	} else if (error) {
+		searchStatus = error;
+	} else if (query) {
+		searchStatus = 'Recherche terminée';
+	}
 
 	useEffect(() => {
 		if (activeId !== undefined) {
@@ -74,19 +57,18 @@ function SearchBar({ onSearch }) {
 			setOpen(false);
 			setActiveIndex(-1);
 		} else if (
-			suggestions.length &&
+			matches.length &&
 			['ArrowDown', 'ArrowUp'].includes(event.key)
 		) {
 			event.preventDefault();
 			setOpen(true);
-			setActiveIndex(
-				(index) =>
-					(index + (event.key === 'ArrowDown' ? 1 : -1) + suggestions.length) %
-					suggestions.length,
-			);
-		} else if (event.key === 'Enter' && expanded && activeIndex >= 0) {
+			setActiveIndex((index) => {
+				if (index < 0) return event.key === 'ArrowDown' ? 0 : matches.length - 1;
+				return (index + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
+			});
+		} else if (event.key === 'Enter' && activeId !== undefined) {
 			event.preventDefault();
-			selectPokemon(suggestions[activeIndex]);
+			selectPokemon(matches[activeIndex]);
 		}
 	}
 
@@ -120,11 +102,16 @@ function SearchBar({ onSearch }) {
 				className="relative w-full min-w-0 shrink-0 rounded-md border border-primary/15 bg-white px-sm shadow-search focus-within:ring-2 focus-within:ring-primary/20 lg:w-5/12"
 			>
 				<div className="flex min-w-0 flex-row items-center gap-sm px-xs sm:gap-md sm:px-md">
-					<button type="submit" aria-label="Afficher les résultats de recherche" disabled={loading || Boolean(error) || !query} className="flex min-h-11 shrink-0 items-center justify-center px-xs disabled:opacity-50">
-					<FontAwesomeIcon
-						icon={faMagnifyingGlass}
-						className="text-sm text-ink"
-					/>
+					<button
+						type="submit"
+						aria-label="Afficher les résultats de recherche"
+						disabled={loading || Boolean(error) || !query}
+						className="flex min-h-11 shrink-0 items-center justify-center px-xs disabled:opacity-50"
+					>
+						<FontAwesomeIcon
+							icon={faMagnifyingGlass}
+							className="text-sm text-ink"
+						/>
 					</button>
 					<input
 						id="pokemon-search"
@@ -134,16 +121,18 @@ function SearchBar({ onSearch }) {
 						aria-expanded={expanded}
 						aria-controls="pokemon-suggestions"
 						aria-activedescendant={
-							expanded && activeIndex >= 0
-								? `pokemon-option-${suggestions[activeIndex].id}`
+							activeId !== undefined
+								? `pokemon-option-${activeId}`
 								: undefined
 						}
 						autoComplete="off"
 						value={search}
 						onChange={(event) => {
-							setSearch(event.target.value);
-							setOpen(true);
+							const value = event.target.value;
+							setSearch(value);
+							setOpen(Boolean(value));
 							setActiveIndex(-1);
+							if (!value && !loading && !error) onSearch('', pokemonList);
 						}}
 						onFocus={() => setOpen(true)}
 						onBlur={() => {
@@ -163,14 +152,9 @@ function SearchBar({ onSearch }) {
 					<p className="flex min-w-0 items-center gap-xs wrap-anywhere">
 						<span
 							aria-hidden="true"
-							className={`size-xs shrink-0 rounded-full ${error ? 'bg-primary' : 'bg-accent'} ${loading ? 'animate-pulse' : ''}`}
+							className={`size-xs shrink-0 rounded-full ${error ? 'bg-primary' : 'bg-accent'} ${loading ? 'motion-safe:animate-pulse' : ''}`}
 						/>
-						{loading
-							? 'Chargement des suggestions…'
-							: error ||
-								(query
-									? 'Recherche terminée'
-									: 'Noms français ou anglais acceptés.')}
+						{searchStatus}
 					</p>
 					{!loading && !error && query && (
 						<p className="shrink-0">
@@ -183,36 +167,41 @@ function SearchBar({ onSearch }) {
 						<button
 							type="button"
 							className="underline"
-							onClick={() => setAttempt((value) => value + 1)}
+							onClick={onRetry}
 						>
 							Réessayer
 						</button>
 					)}
 				</div>
-				<div hidden={!expanded} className="absolute top-full left-0 right-0 z-10 pt-sm">
-				<ul
-					id="pokemon-suggestions"
-					role="listbox"
-					aria-label="Suggestions de Pokémon"
+				<div
 					hidden={!expanded}
-					className="max-h-suggestions overflow-y-auto overscroll-contain rounded-md bg-background shadow-lg"
+					className="absolute top-full left-0 right-0 z-10 pt-sm"
 				>
-					{expanded &&
-						suggestions.map((pokemon, index) => (
-							<li
-								key={pokemon.id}
-								id={`pokemon-option-${pokemon.id}`}
-								role="option"
-								aria-selected={index === activeIndex}
-								onMouseDown={(event) => event.preventDefault()}
-								onClick={() => selectPokemon(pokemon)}
-								className={`flex min-h-12 cursor-pointer items-center justify-between gap-md px-lg py-md hover:bg-accent-tint hover:text-accent ${index === activeIndex ? 'bg-accent-tint text-accent' : ''}`}
-							>
-								<span className="min-w-0 break-words capitalize">{pokemon.displayName}</span>
-								<span className="shrink-0 text-muted">#{pokemon.id}</span>
-							</li>
-						))}
-				</ul>
+					<ul
+						id="pokemon-suggestions"
+						role="listbox"
+						aria-label="Suggestions de Pokémon"
+						hidden={!expanded}
+						className="max-h-suggestions overflow-y-auto overscroll-contain rounded-md bg-background shadow-lg"
+					>
+						{expanded &&
+							matches.map((pokemon, index) => (
+								<li
+									key={pokemon.id}
+									id={`pokemon-option-${pokemon.id}`}
+									role="option"
+									aria-selected={index === activeIndex}
+									onMouseDown={(event) => event.preventDefault()}
+									onClick={() => selectPokemon(pokemon)}
+									className={`flex min-h-12 cursor-pointer items-center justify-between gap-md px-lg py-md hover:bg-accent-tint hover:text-accent ${index === activeIndex ? 'bg-accent-tint text-accent' : ''}`}
+								>
+									<span className="min-w-0 break-words capitalize">
+										{pokemon.displayName}
+									</span>
+									<span className="shrink-0 text-muted">#{pokemon.id}</span>
+								</li>
+							))}
+					</ul>
 				</div>
 			</form>
 		</section>
@@ -220,6 +209,14 @@ function SearchBar({ onSearch }) {
 }
 
 SearchBar.propTypes = {
+	pokemonList: PropTypes.arrayOf(PropTypes.shape({
+		id: PropTypes.number.isRequired,
+		name: PropTypes.string.isRequired,
+		displayName: PropTypes.string.isRequired,
+	})).isRequired,
+	loading: PropTypes.bool.isRequired,
+	error: PropTypes.string.isRequired,
+	onRetry: PropTypes.func.isRequired,
 	onSearch: PropTypes.func.isRequired,
 };
 

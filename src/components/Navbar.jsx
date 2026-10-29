@@ -9,8 +9,7 @@ import {
 
 const menuItems = [
 	{ label: 'Explorer', view: 'explore' },
-	{ label: 'Mon équipe' },
-	{ label: 'Comparer' },
+	{ label: 'Mon équipe', view: 'team' },
 	{ label: 'Mes favoris', view: 'favorites' },
 ];
 
@@ -23,7 +22,7 @@ function Navbar({ selectedCount, activeView, onNavigate }) {
 	}
 
 	function navigateTo(view) {
-		if (view) onNavigate(view);
+		onNavigate(view);
 		closeMenu();
 	}
 
@@ -92,6 +91,7 @@ function Navbar({ selectedCount, activeView, onNavigate }) {
 				<button
 					type="button"
 					aria-label={`Ma sélection : ${selectedCount} Pokémon`}
+					onClick={() => navigateTo('team')}
 					className="flex min-h-11 items-center justify-center gap-sm bg-ink text-xs text-white rounded-xl py-sm px-md font-bold sm:text-sm"
 				>
 					<FontAwesomeIcon icon={faLayerGroup} className="sm:hidden" />

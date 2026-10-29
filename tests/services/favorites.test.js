@@ -1,7 +1,7 @@
 /* eslint-env node */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readSessionFavorites, saveSessionFavorites } from './favorites.js';
+import { readSessionFavorites, saveSessionFavorites } from '../../src/services/favorites.js';
 
 test('session favorites persist only IDs and clear only their own storage key', () => {
 	const entries = new Map([['unrelated', 'keep']]);
